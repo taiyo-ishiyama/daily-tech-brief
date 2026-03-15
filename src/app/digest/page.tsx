@@ -2,14 +2,18 @@ import type { Metadata } from "next";
 import { Container } from "@/components/layout/container";
 import { DigestCard } from "@/components/digest/digest-card";
 import { PageTitle, BodyLarge } from "@/components/ui/typography";
-import { MOCK_DIGESTS } from "@/lib/mock-data";
+import { fetchAllDigests } from "@/lib/sanity/fetchers";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Digests",
   description: "Browse the archive of daily tech digests.",
 };
 
-export default function DigestIndexPage() {
+export default async function DigestIndexPage() {
+  const digests = await fetchAllDigests();
+
   return (
     <section className="py-12 lg:py-16">
       <Container>
@@ -22,7 +26,7 @@ export default function DigestIndexPage() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {MOCK_DIGESTS.map((digest) => (
+          {digests.map((digest) => (
             <DigestCard
               key={digest._id}
               title={digest.title}

@@ -8,8 +8,8 @@ export default defineConfig({
   name: "daily-tech-brief",
   title: "Daily Tech Brief",
 
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production",
+  projectId: "ccrgq6eu",
+  dataset: "production",
 
   plugins: [structureTool(), visionTool()],
 

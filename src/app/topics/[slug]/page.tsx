@@ -9,7 +9,11 @@ import { FeaturedArticleCard } from "@/components/article/featured-article-card"
 import { TopicChip } from "@/components/ui/topic-chip";
 import { Button } from "@/components/ui/button";
 import { PageTitle, BodyLarge, MutedSmall } from "@/components/ui/typography";
-import { getTopicBySlug, getArticlesByTopic, MOCK_TOPICS } from "@/lib/mock-data";
+import {
+  fetchTopicBySlug,
+  fetchArticlesByTopic,
+  fetchAllTopics,
+} from "@/lib/sanity/fetchers";
 
 interface TopicPageProps {
   params: Promise<{ slug: string }>;
@@ -17,7 +21,7 @@ interface TopicPageProps {
 
 export async function generateMetadata({ params }: TopicPageProps) {
   const { slug } = await params;
-  const topic = getTopicBySlug(slug);
+  const topic = await fetchTopicBySlug(slug);
   return {
     title: topic?.name ?? "Topic",
   };
@@ -25,13 +29,16 @@ export async function generateMetadata({ params }: TopicPageProps) {
 
 export default async function TopicPage({ params }: TopicPageProps) {
   const { slug } = await params;
-  const topic = getTopicBySlug(slug);
+  const [topic, articles, allTopics] = await Promise.all([
+    fetchTopicBySlug(slug),
+    fetchArticlesByTopic(slug),
+    fetchAllTopics(),
+  ]);
 
   if (!topic) {
     notFound();
   }
 
-  const articles = getArticlesByTopic(slug);
   const leadArticle = articles[0];
   const archiveArticles = articles.slice(1);
 
@@ -58,10 +65,10 @@ export default async function TopicPage({ params }: TopicPageProps) {
           </MutedSmall>
         </div>
 
-        {/* Filter tabs (static) */}
+        {/* Filter tabs */}
         <div className="mb-8 flex flex-wrap items-center gap-2">
           <span className="mr-2 text-sm font-medium text-muted-foreground">Topics:</span>
-          {MOCK_TOPICS.map((t) => (
+          {allTopics.map((t) => (
             <TopicChip
               key={t.slug}
               name={t.name}

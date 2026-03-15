@@ -1,6 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { format } from "date-fns";
 import { ExternalLink, Key, Lightbulb, Sparkles } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
@@ -8,9 +6,11 @@ import { SectionHeader } from "@/components/layout/section-header";
 import { ArticleCard } from "@/components/article/article-card";
 import { TopicChip } from "@/components/ui/topic-chip";
 import { MetadataRow } from "@/components/ui/metadata-row";
-import { AISummaryBadge } from "@/components/ui/ai-summary-badge";
 import { PageTitle, SectionTitle } from "@/components/ui/typography";
-import { getArticleBySlug, MOCK_ARTICLES } from "@/lib/mock-data";
+import {
+  fetchArticleBySlug,
+  fetchRelatedArticles,
+} from "@/lib/sanity/fetchers";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -18,7 +18,7 @@ interface ArticlePageProps {
 
 export async function generateMetadata({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await fetchArticleBySlug(slug);
   return {
     title: article?.title ?? "Article",
   };
@@ -26,16 +26,13 @@ export async function generateMetadata({ params }: ArticlePageProps) {
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await fetchArticleBySlug(slug);
 
   if (!article) {
     notFound();
   }
 
-  // Get related articles (same topic, excluding current)
-  const related = MOCK_ARTICLES.filter(
-    (a) => a.topic.slug === article.topic.slug && a._id !== article._id
-  ).slice(0, 2);
+  const related = await fetchRelatedArticles(article.topic.slug, slug, 2);
 
   return (
     <section className="py-12 lg:py-16">

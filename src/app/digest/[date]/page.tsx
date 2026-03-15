@@ -8,7 +8,7 @@ import { ArticleCard } from "@/components/article/article-card";
 import { FeaturedArticleCard } from "@/components/article/featured-article-card";
 import { Button } from "@/components/ui/button";
 import { PageTitle, BodyLarge } from "@/components/ui/typography";
-import { getDigestByDate, MOCK_TOPICS } from "@/lib/mock-data";
+import { fetchDigestByDate } from "@/lib/sanity/fetchers";
 
 interface DigestDetailPageProps {
   params: Promise<{ date: string }>;
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: DigestDetailPageProps) {
 
 export default async function DigestDetailPage({ params }: DigestDetailPageProps) {
   const { date } = await params;
-  const digest = getDigestByDate(date);
+  const digest = await fetchDigestByDate(date);
 
   if (!digest) {
     notFound();
@@ -94,8 +94,7 @@ export default async function DigestDetailPage({ params }: DigestDetailPageProps
 
         {/* Topic-grouped sections */}
         {Array.from(articlesByTopic.entries()).map(([topicName, articles]) => {
-          const topicSlug =
-            MOCK_TOPICS.find((t) => t.name === topicName)?.slug ?? topicName.toLowerCase();
+          const topicSlug = articles[0]?.topic.slug ?? topicName.toLowerCase();
           return (
             <div key={topicName} className="mb-12 last:mb-0">
               <SectionHeader
