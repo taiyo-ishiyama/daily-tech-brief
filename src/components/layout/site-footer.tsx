@@ -10,11 +10,7 @@ const footerLinks = {
     { label: "Topics", href: "/topics" },
     { label: "Search", href: "/search" },
   ],
-  Resources: [
-    { label: "About", href: "/about" },
-    { label: "API Docs", href: "#" },
-  ],
-  Company: [
+  Legal: [
     { label: "Privacy", href: "#" },
     { label: "Terms", href: "#" },
   ],
@@ -39,7 +35,7 @@ export function SiteFooter() {
           {/* Link columns */}
           {Object.entries(footerLinks).map(([heading, links]) => (
             <div key={heading}>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="mb-3 text-xs font-semibold uppercase text-muted-foreground">
                 {heading}
               </p>
               <ul className="space-y-2">

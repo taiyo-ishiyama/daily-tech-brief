@@ -10,31 +10,63 @@ import { TopicChip } from "@/components/ui/topic-chip";
 import { PageTitle, BodyLarge, MutedSmall } from "@/components/ui/typography";
 import { MOCK_TOPICS, MOCK_DIGESTS, getFeaturedArticle } from "@/lib/mock-data";
 
+<<<<<<< Updated upstream
 export default function HomePage() {
   const featured = getFeaturedArticle();
   const todayDigest = MOCK_DIGESTS[0];
   const todayArticles = todayDigest.articles.filter((a) => a._id !== featured._id).slice(0, 6);
+=======
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const [featured, todayDigest, topics] = await Promise.all([
+    fetchFeaturedArticle(),
+    fetchLatestDigest(),
+    fetchAllTopics(),
+  ]);
+
+  if (!todayDigest) {
+    return (
+      <section className="py-16">
+        <Container>
+          <PageTitle className="text-balance">The Intelligence Brief.</PageTitle>
+          <BodyLarge className="mt-4 text-pretty text-muted-foreground">
+            No digests available yet. Check back soon.
+          </BodyLarge>
+        </Container>
+      </section>
+    );
+  }
+
+  const todayArticles = todayDigest.articles
+    .filter((a) => a._id !== featured?._id)
+    .slice(0, 6);
+>>>>>>> Stashed changes
 
   return (
     <>
       {/* Hero */}
       <section className="border-b border-border py-16 lg:py-24">
         <Container>
-          <div className="grid items-center gap-10 lg:grid-cols-2">
+          <div className="mx-auto max-w-2xl">
             <div className="space-y-6">
-              <PageTitle>The Intelligence Brief.</PageTitle>
-              <BodyLarge className="text-muted-foreground">
+              <PageTitle className="text-balance">The Intelligence Brief.</PageTitle>
+              <BodyLarge className="text-pretty text-muted-foreground">
                 AI-curated summaries of the day&rsquo;s most significant technological
                 developments. Cut through the noise with concise, expert-reviewed analysis.
               </BodyLarge>
               <MutedSmall>{format(new Date(todayDigest.date), "EEEE, d MMMM yyyy")}</MutedSmall>
               <div className="flex flex-wrap items-center gap-6 pt-2">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-primary">{todayDigest.articles.length}</p>
+                  <p className="text-2xl font-bold tabular-nums text-primary">{todayDigest.articles.length}</p>
                   <p className="text-xs text-muted-foreground">articles today</p>
                 </div>
                 <div className="text-center">
+<<<<<<< Updated upstream
                   <p className="text-2xl font-bold text-primary">{MOCK_TOPICS.length}</p>
+=======
+                  <p className="text-2xl font-bold tabular-nums text-primary">{topics.length}</p>
+>>>>>>> Stashed changes
                   <p className="text-xs text-muted-foreground">topics covered</p>
                 </div>
               </div>
@@ -55,8 +87,6 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            {/* Hero image placeholder */}
-            <div className="hidden aspect-video rounded-lg bg-secondary lg:block" />
           </div>
         </Container>
       </section>

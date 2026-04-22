@@ -10,7 +10,7 @@ interface HeadingProps {
 
 export function PageTitle({ children, className, as: Tag = "h1" }: HeadingProps) {
   return (
-    <Tag className={cn("text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl", className)}>
+    <Tag className={cn("text-3xl font-bold sm:text-4xl lg:text-5xl", className)}>
       {children}
     </Tag>
   );
@@ -18,7 +18,7 @@ export function PageTitle({ children, className, as: Tag = "h1" }: HeadingProps)
 
 export function SectionTitle({ children, className, as: Tag = "h2" }: HeadingProps) {
   return (
-    <Tag className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", className)}>
+    <Tag className={cn("text-2xl font-semibold sm:text-3xl", className)}>
       {children}
     </Tag>
   );
@@ -93,7 +93,7 @@ export function MutedSmall({ children, className }: TextProps) {
 
 export function Label({ children, className }: TextProps) {
   return (
-    <span className={cn("text-xs font-semibold uppercase tracking-wider text-muted-foreground", className)}>
+    <span className={cn("text-xs font-semibold uppercase text-muted-foreground", className)}>
       {children}
     </span>
   );

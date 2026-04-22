@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { CardTitle } from "@/components/ui/typography";
 import { TopicChip } from "@/components/ui/topic-chip";
 import { MetadataRow } from "@/components/ui/metadata-row";
+import { ArticlePlaceholderThumbnail } from "./article-placeholder-thumbnail";
 
 interface FeaturedArticleCardProps {
   article: Article;
@@ -18,8 +19,22 @@ export function FeaturedArticleCard({ article, className }: FeaturedArticleCardP
         className
       )}
     >
-      {/* Image placeholder */}
-      <div className="aspect-video bg-secondary md:aspect-auto md:min-h-[320px]" />
+      {/* Thumbnail */}
+      {article.thumbnail?.mode === "source" && article.thumbnail.url ? (
+        <div className="aspect-video overflow-hidden bg-secondary md:aspect-auto md:min-h-80">
+          <img
+            src={article.thumbnail.url}
+            alt={article.thumbnail.alt ?? article.title}
+            className="size-full object-cover"
+          />
+        </div>
+      ) : (
+        <ArticlePlaceholderThumbnail
+          article={article}
+          size="large"
+          className="aspect-video md:aspect-auto md:min-h-80"
+        />
+      )}
 
       {/* Content */}
       <div className="flex flex-col justify-center gap-4 p-6 md:py-8 md:pr-8 md:pl-0">
@@ -32,12 +47,12 @@ export function FeaturedArticleCard({ article, className }: FeaturedArticleCardP
             {article.title}
           </CardTitle>
         </Link>
-        <p className="text-sm leading-relaxed text-muted-foreground">
+        <p className="text-pretty text-sm leading-relaxed text-muted-foreground">
           {article.summaryShort}
         </p>
         {article.whyItMatters && (
           <div className="rounded-md border border-border bg-secondary/50 p-4">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">
+            <p className="mb-1 text-xs font-semibold uppercase text-primary">
               Why it matters
             </p>
             <p className="line-clamp-3 text-sm text-muted-foreground">

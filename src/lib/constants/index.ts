@@ -8,7 +8,6 @@ export const NAV_LINKS = [
   { label: "Digests", href: "/digest" },
   { label: "Topics", href: "/topics" },
   { label: "Search", href: "/search" },
-  { label: "About", href: "/about" },
 ] as const;
 
 export const DEFAULT_TOPICS = [
