@@ -22,8 +22,8 @@ const articleProjection = groq`{
   summaryShort,
   summaryLong,
   whyItMatters,
-  keyTakeaways,
-  tags,
+  "keyTakeaways": coalesce(keyTakeaways, []),
+  "tags": coalesce(tags, []),
   topic->${topicProjection},
   thumbnail,
   featured,
@@ -55,7 +55,7 @@ export const SEARCH_ARTICLES_QUERY = groq`
     summaryShort match $q ||
     summaryLong match $q ||
     sourceName match $q
-  )] | order(publishedAt desc)${articleProjection}
+  )] | order(publishedAt desc)[0...20]${articleProjection}
 `;
 
 // ── Digest queries ──

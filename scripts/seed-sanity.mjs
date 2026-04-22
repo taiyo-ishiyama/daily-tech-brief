@@ -22,15 +22,22 @@ for (const line of envContent.split("\n")) {
 }
 
 const projectId = env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-const dataset = env.NEXT_PUBLIC_SANITY_DATASET || "production";
+const dataset = env.NEXT_PUBLIC_SANITY_DATASET;
 const token = env.SANITY_API_EDITOR_TOKEN;
 
-if (!projectId || !token) {
+if (!projectId || !dataset || !token) {
   console.error(
-    "Missing NEXT_PUBLIC_SANITY_PROJECT_ID or SANITY_API_EDITOR_TOKEN in .env.local"
+    "Missing NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET, or SANITY_API_EDITOR_TOKEN in .env.local"
   );
   console.error(
     "\nTo create a token: sanity.io/manage → your project → API → Tokens → Add API token (Editor role)"
+  );
+  process.exit(1);
+}
+
+if (dataset === "production" && !process.argv.includes("--allow-production")) {
+  console.error(
+    'Refusing to seed test data into the "production" dataset. Pass --allow-production to override intentionally.'
   );
   process.exit(1);
 }

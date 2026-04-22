@@ -18,24 +18,37 @@ interface SearchPageClientProps {
 
 export default function SearchPageClient({ topics }: SearchPageClientProps) {
   const [query, setQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [results, setResults] = useState<Article[]>([]);
   const [searched, setSearched] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (query.trim()) {
-      startTransition(async () => {
-        const articles = await searchArticlesAction(query.trim());
-        setResults(articles);
-        setSearched(true);
-      });
+    const trimmed = query.trim();
+
+    if (!trimmed) {
+      setResults([]);
+      setSubmittedQuery("");
+      setSearched(false);
+      return;
     }
+
+    setSearched(false);
+    startTransition(async () => {
+      const articles = await searchArticlesAction(trimmed);
+      setResults(articles);
+      setSubmittedQuery(trimmed);
+      setSearched(true);
+    });
   }
 
   function highlightQuery(text: string) {
-    if (!query.trim()) return text;
-    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+    if (!submittedQuery) return text;
+    const regex = new RegExp(
+      `(${submittedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+      "gi"
+    );
     const parts = text.split(regex);
     return parts.map((part, i) =>
       regex.test(part) ? (
@@ -54,7 +67,7 @@ export default function SearchPageClient({ topics }: SearchPageClientProps) {
         {/* Header */}
         <div className="mb-8 space-y-3">
           <PageTitle>Search Archive</PageTitle>
-          <BodyLarge className="text-muted-foreground">
+          <BodyLarge className="text-pretty text-muted-foreground">
             Find specific insights from our comprehensive archive of daily tech news and analysis.
           </BodyLarge>
         </div>
@@ -90,7 +103,7 @@ export default function SearchPageClient({ topics }: SearchPageClientProps) {
               Showing{" "}
               <span className="font-medium text-foreground">{results.length}</span>{" "}
               result{results.length !== 1 ? "s" : ""} for{" "}
-              <span className="font-medium text-primary">&ldquo;{query}&rdquo;</span>
+              <span className="font-medium text-primary">&ldquo;{submittedQuery}&rdquo;</span>
             </p>
 
             {results.length === 0 ? (
@@ -108,7 +121,7 @@ export default function SearchPageClient({ topics }: SearchPageClientProps) {
                       {article.tags.slice(0, 2).map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-full border border-border bg-secondary/50 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+                          className="rounded-full border border-border bg-secondary/50 px-2.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground"
                         >
                           {tag}
                         </span>
@@ -122,7 +135,7 @@ export default function SearchPageClient({ topics }: SearchPageClientProps) {
                         {highlightQuery(article.title)}
                       </CardTitle>
                     </Link>
-                    <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+                    <p className="mb-3 line-clamp-2 text-pretty text-sm text-muted-foreground">
                       {highlightQuery(article.summaryShort)}
                     </p>
                     <div className="flex items-center justify-between">
@@ -138,24 +151,6 @@ export default function SearchPageClient({ topics }: SearchPageClientProps) {
                     </div>
                   </article>
                 ))}
-              </div>
-            )}
-
-            {/* Static pagination */}
-            {results.length > 0 && (
-              <div className="mt-8 flex items-center justify-center gap-2">
-                <Button variant="outline" size="icon-sm" disabled>
-                  &lsaquo;
-                </Button>
-                <Button size="sm" className="min-w-[2rem]">
-                  1
-                </Button>
-                <Button variant="outline" size="sm" className="min-w-[2rem]">
-                  2
-                </Button>
-                <Button variant="outline" size="icon-sm" disabled>
-                  &rsaquo;
-                </Button>
               </div>
             )}
           </div>
