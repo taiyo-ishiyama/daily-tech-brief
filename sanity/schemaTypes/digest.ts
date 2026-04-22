@@ -53,6 +53,8 @@ export const digest = defineType({
         defineField({ name: "security", title: "Security", type: "number" }),
         defineField({ name: "webDevelopment", title: "Web Development", type: "number" }),
         defineField({ name: "openSource", title: "Open Source", type: "number" }),
+        defineField({ name: "programming", title: "Programming", type: "number" }),
+        defineField({ name: "career", title: "Career", type: "number" }),
       ],
     }),
     defineField({

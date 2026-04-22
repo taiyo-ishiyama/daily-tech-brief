@@ -1,16 +1,15 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { format } from "date-fns";
-import { ExternalLink, Key, Lightbulb, Sparkles } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { SectionHeader } from "@/components/layout/section-header";
 import { ArticleCard } from "@/components/article/article-card";
 import { TopicChip } from "@/components/ui/topic-chip";
 import { MetadataRow } from "@/components/ui/metadata-row";
-import { AISummaryBadge } from "@/components/ui/ai-summary-badge";
-import { PageTitle, SectionTitle } from "@/components/ui/typography";
-import { getArticleBySlug, MOCK_ARTICLES } from "@/lib/mock-data";
+import {
+  fetchArticleBySlug,
+  fetchRelatedArticles,
+} from "@/lib/sanity/fetchers";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -18,7 +17,7 @@ interface ArticlePageProps {
 
 export async function generateMetadata({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await fetchArticleBySlug(slug);
   return {
     title: article?.title ?? "Article",
   };
@@ -26,134 +25,128 @@ export async function generateMetadata({ params }: ArticlePageProps) {
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await fetchArticleBySlug(slug);
 
   if (!article) {
     notFound();
   }
 
-  // Get related articles (same topic, excluding current)
-  const related = MOCK_ARTICLES.filter(
-    (a) => a.topic.slug === article.topic.slug && a._id !== article._id
-  ).slice(0, 2);
+  const related = await fetchRelatedArticles(article.topic.slug, slug, 2);
 
   return (
-    <section className="py-12 lg:py-16">
-      <Container className="max-w-3xl">
-        {/* Topic chips */}
-        <div className="mb-4 flex flex-wrap gap-2">
-          <TopicChip name={article.topic.name} slug={article.topic.slug} active />
-          {article.tags.slice(0, 2).map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-center rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs text-muted-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+    <article className="py-12 lg:py-20">
+      <Container className="max-w-2xl">
 
-        {/* Title */}
-        <PageTitle className="mb-4">{article.title}</PageTitle>
-
-        {/* Metadata */}
-        <MetadataRow
-          source={article.sourceName}
-          readingTime={article.readingTime}
-          date={article.publishedAt}
-          className="mb-8"
-        />
-
-        {/* Executive Summary */}
-        <div className="mb-8 border-l-2 border-primary pl-6">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">
-            Executive Summary
-          </p>
-          <p className="italic leading-relaxed text-muted-foreground">
-            {article.summaryLong}
-          </p>
-        </div>
-
-        {/* Key Takeaways */}
-        <div className="mb-8 rounded-lg border border-border bg-card p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Key className="size-4 text-primary" />
-            <SectionTitle as="h3" className="text-lg sm:text-xl">
-              Key Takeaways
-            </SectionTitle>
-          </div>
-          <ul className="space-y-3">
-            {article.keyTakeaways.map((point, i) => (
-              <li key={i} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
-                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">
-                  {i + 1}
-                </span>
-                {point}
-              </li>
+        {/* ── Header ── */}
+        <header className="mb-12">
+          <div className="mb-5 flex flex-wrap items-center gap-2">
+            <TopicChip name={article.topic.name} slug={article.topic.slug} active />
+            {article.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground"
+              >
+                {tag}
+              </span>
             ))}
-          </ul>
-        </div>
-
-        {/* Why It Matters */}
-        <div className="mb-8">
-          <div className="mb-3 flex items-center gap-2">
-            <Lightbulb className="size-4 text-primary" />
-            <SectionTitle as="h3" className="text-lg sm:text-xl">
-              Why it matters
-            </SectionTitle>
           </div>
-          <p className="leading-relaxed text-muted-foreground">
-            {article.whyItMatters}
-          </p>
-        </div>
 
-        {/* Full AI Analysis */}
-        <div className="mb-8">
-          <div className="mb-3 flex items-center gap-2">
-            <Sparkles className="size-4 text-primary" />
-            <SectionTitle as="h3" className="text-lg sm:text-xl">
-              Full AI Analysis
-            </SectionTitle>
-          </div>
-          <div className="space-y-4 leading-relaxed text-muted-foreground">
-            <p>{article.summaryLong}</p>
-            <p>{article.whyItMatters}</p>
-          </div>
-        </div>
+          <h1 className="text-balance text-3xl font-bold leading-tight sm:text-4xl">
+            {article.title}
+          </h1>
 
-        {/* Original Source */}
-        <div className="mb-12 rounded-lg border border-border bg-card p-6 text-center">
-          <p className="mb-1 text-xs text-muted-foreground">
-            This curated summary was synthesised by {" "}
-            <span className="text-foreground">Daily Tech Brief AI</span> from{" "}
-            <span className="text-foreground">{article.sourceName}</span>.
+          <MetadataRow
+            source={article.sourceName}
+            readingTime={article.readingTime}
+            date={article.publishedAt}
+            className="mt-5"
+          />
+        </header>
+
+        {/* ── TL;DR ── */}
+        <section className="mb-12 border-l-2 border-primary py-1 pl-5">
+          <p className="text-pretty text-lg leading-relaxed text-foreground/80">
+            {article.summaryShort}
           </p>
-          <p className="mb-4 text-xs text-muted-foreground">
-            Original content belongs to {article.sourceName}.
-          </p>
+        </section>
+
+        {/* ── Full Summary ── */}
+        <section className="mb-12">
+          <div className="prose-custom space-y-5">
+            {article.summaryLong.split("\n\n").map((paragraph, i) => (
+              <p
+                key={i}
+                className="text-pretty leading-[1.8] text-muted-foreground"
+              >
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Key Takeaways ── */}
+        {article.keyTakeaways.length > 0 && (
+          <section className="mb-12 rounded-lg border border-border bg-card/50 p-6 sm:p-8">
+            <h2 className="mb-5 text-sm font-semibold uppercase text-foreground">
+              Key Takeaways
+            </h2>
+            <ul className="space-y-4">
+              {article.keyTakeaways.map((point, i) => (
+                <li key={i} className="flex gap-4 text-sm leading-relaxed">
+                  <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold tabular-nums text-primary">
+                    {i + 1}
+                  </span>
+                  <span className="text-pretty text-muted-foreground">{point}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* ── Why It Matters ── */}
+        {article.whyItMatters && (
+          <section className="mb-12">
+            <h2 className="mb-4 text-sm font-semibold uppercase text-foreground">
+              Why It Matters
+            </h2>
+            <p className="text-pretty leading-[1.8] text-muted-foreground">
+              {article.whyItMatters}
+            </p>
+          </section>
+        )}
+
+        {/* ── Divider ── */}
+        <hr className="mb-12 border-border" />
+
+        {/* ── Source Attribution ── */}
+        <section className="mb-16 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-muted-foreground">
+            <span>Summarised from </span>
+            <span className="font-medium text-foreground">{article.sourceName}</span>
+          </div>
           <a
             href={article.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wider text-primary transition-colors hover:text-primary/80"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
           >
-            Read original article
+            Read original
             <ExternalLink className="size-3.5" />
           </a>
-        </div>
+        </section>
 
-        {/* Further Reading */}
+        {/* ── Further Reading ── */}
         {related.length > 0 && (
-          <div>
+          <section>
             <SectionHeader title="Further Reading" className="mb-6" />
             <div className="grid gap-6 sm:grid-cols-2">
               {related.map((a) => (
                 <ArticleCard key={a._id} article={a} />
               ))}
             </div>
-          </div>
+          </section>
         )}
       </Container>
-    </section>
+    </article>
   );
 }

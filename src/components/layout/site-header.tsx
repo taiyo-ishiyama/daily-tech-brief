@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Zap, Search, Moon, Menu, X } from "lucide-react";
+import { Zap, Search, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SITE_NAME, NAV_LINKS } from "@/lib/constants";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Container } from "./container";
 
 export function SiteHeader() {
@@ -49,9 +50,7 @@ export function SiteHeader() {
             <Search className="size-4" />
             <span className="sr-only">Search</span>
           </Link>
-          <Button variant="ghost" size="icon-sm" aria-label="Toggle theme">
-            <Moon className="size-4" />
-          </Button>
+          <ThemeToggle />
           {/* Mobile menu toggle */}
           <Button
             variant="ghost"

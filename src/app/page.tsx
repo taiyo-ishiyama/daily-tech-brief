@@ -8,33 +8,58 @@ import { ArticleCard } from "@/components/article/article-card";
 import { FeaturedArticleCard } from "@/components/article/featured-article-card";
 import { TopicChip } from "@/components/ui/topic-chip";
 import { PageTitle, BodyLarge, MutedSmall } from "@/components/ui/typography";
-import { MOCK_TOPICS, MOCK_DIGESTS, getFeaturedArticle } from "@/lib/mock-data";
+import {
+  fetchFeaturedArticle,
+  fetchLatestDigest,
+  fetchAllTopics,
+} from "@/lib/sanity/fetchers";
 
-export default function HomePage() {
-  const featured = getFeaturedArticle();
-  const todayDigest = MOCK_DIGESTS[0];
-  const todayArticles = todayDigest.articles.filter((a) => a._id !== featured._id).slice(0, 6);
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const [featured, todayDigest, topics] = await Promise.all([
+    fetchFeaturedArticle(),
+    fetchLatestDigest(),
+    fetchAllTopics(),
+  ]);
+
+  if (!todayDigest) {
+    return (
+      <section className="py-16">
+        <Container>
+          <PageTitle className="text-balance">The Intelligence Brief.</PageTitle>
+          <BodyLarge className="mt-4 text-pretty text-muted-foreground">
+            No digests available yet. Check back soon.
+          </BodyLarge>
+        </Container>
+      </section>
+    );
+  }
+
+  const todayArticles = todayDigest.articles
+    .filter((a) => a._id !== featured?._id)
+    .slice(0, 6);
 
   return (
     <>
       {/* Hero */}
       <section className="border-b border-border py-16 lg:py-24">
         <Container>
-          <div className="grid items-center gap-10 lg:grid-cols-2">
+          <div className="mx-auto max-w-2xl">
             <div className="space-y-6">
-              <PageTitle>The Intelligence Brief.</PageTitle>
-              <BodyLarge className="text-muted-foreground">
+              <PageTitle className="text-balance">The Intelligence Brief.</PageTitle>
+              <BodyLarge className="text-pretty text-muted-foreground">
                 AI-curated summaries of the day&rsquo;s most significant technological
                 developments. Cut through the noise with concise, expert-reviewed analysis.
               </BodyLarge>
               <MutedSmall>{format(new Date(todayDigest.date), "EEEE, d MMMM yyyy")}</MutedSmall>
               <div className="flex flex-wrap items-center gap-6 pt-2">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-primary">{todayDigest.articles.length}</p>
+                  <p className="text-2xl font-bold tabular-nums text-primary">{todayDigest.articles.length}</p>
                   <p className="text-xs text-muted-foreground">articles today</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-primary">{MOCK_TOPICS.length}</p>
+                  <p className="text-2xl font-bold tabular-nums text-primary">{topics.length}</p>
                   <p className="text-xs text-muted-foreground">topics covered</p>
                 </div>
               </div>
@@ -55,48 +80,52 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            {/* Hero image placeholder */}
-            <div className="hidden aspect-video rounded-lg bg-secondary lg:block" />
           </div>
         </Container>
       </section>
 
       {/* Featured Insight */}
-      <section className="py-12 lg:py-16">
-        <Container>
-          <SectionHeader title="Featured Insight" className="mb-8" />
-          <FeaturedArticleCard article={featured} />
-        </Container>
-      </section>
+      {featured && (
+        <section className="py-12 lg:py-16">
+          <Container>
+            <SectionHeader title="Featured Insight" className="mb-8" />
+            <FeaturedArticleCard article={featured} />
+          </Container>
+        </section>
+      )}
 
       {/* Topic chips */}
-      <section className="py-8">
-        <Container>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="mr-2 text-sm font-medium text-muted-foreground">Trending topics:</span>
-            {MOCK_TOPICS.map((topic) => (
-              <TopicChip key={topic.slug} name={topic.name} slug={topic.slug} />
-            ))}
-          </div>
-        </Container>
-      </section>
+      {topics.length > 0 && (
+        <section className="py-8">
+          <Container>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-2 text-sm font-medium text-muted-foreground">Trending topics:</span>
+              {topics.map((topic) => (
+                <TopicChip key={topic.slug} name={topic.name} slug={topic.slug} />
+              ))}
+            </div>
+          </Container>
+        </section>
+      )}
 
       {/* Today's Summaries */}
-      <section className="py-12 lg:py-16">
-        <Container>
-          <SectionHeader
-            title="Today&rsquo;s Summaries"
-            href={`/digest/${todayDigest.slug}`}
-            linkLabel="View all"
-            className="mb-8"
-          />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {todayArticles.map((article) => (
-              <ArticleCard key={article._id} article={article} />
-            ))}
-          </div>
-        </Container>
-      </section>
+      {todayArticles.length > 0 && (
+        <section className="py-12 lg:py-16">
+          <Container>
+            <SectionHeader
+              title="Today&rsquo;s Summaries"
+              href={`/digest/${todayDigest.slug}`}
+              linkLabel="View all"
+              className="mb-8"
+            />
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {todayArticles.map((article) => (
+                <ArticleCard key={article._id} article={article} />
+              ))}
+            </div>
+          </Container>
+        </section>
+      )}
     </>
   );
 }

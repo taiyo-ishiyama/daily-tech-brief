@@ -47,10 +47,46 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* ── Dark-first editorial theme with indigo accent ── */
+/* ── Editorial theme with indigo accent ── */
 
+/* Light mode */
 :root {
-  /* Dark mode as default */
+  --background: oklch(0.98 0.005 270);
+  --foreground: oklch(0.15 0.015 270);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.015 270);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.015 270);
+  --primary: oklch(0.45 0.25 270);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.94 0.01 270);
+  --secondary-foreground: oklch(0.2 0.015 270);
+  --muted: oklch(0.95 0.005 270);
+  --muted-foreground: oklch(0.45 0.015 260);
+  --accent: oklch(0.45 0.25 270);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.55 0.2 25);
+  --border: oklch(0.88 0.01 260);
+  --input: oklch(0.88 0.01 260);
+  --ring: oklch(0.5 0.15 260);
+  --chart-1: oklch(0.55 0.15 260);
+  --chart-2: oklch(0.5 0.18 260);
+  --chart-3: oklch(0.45 0.2 260);
+  --chart-4: oklch(0.4 0.2 260);
+  --chart-5: oklch(0.35 0.18 260);
+  --radius: 0.5rem;
+  --sidebar: oklch(0.96 0.005 260);
+  --sidebar-foreground: oklch(0.15 0.015 270);
+  --sidebar-primary: oklch(0.45 0.25 270);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.92 0.01 260);
+  --sidebar-accent-foreground: oklch(0.2 0.015 270);
+  --sidebar-border: oklch(0.88 0.01 260);
+  --sidebar-ring: oklch(0.5 0.15 260);
+}
+
+/* Dark mode */
+.dark {
   --background: oklch(0.1 0.015 270);
   --foreground: oklch(0.95 0.005 260);
   --card: oklch(0.15 0.015 270);
@@ -74,7 +110,6 @@
   --chart-3: oklch(0.55 0.2 260);
   --chart-4: oklch(0.5 0.2 260);
   --chart-5: oklch(0.45 0.18 260);
-  --radius: 0.5rem;
   --sidebar: oklch(0.15 0.005 260);
   --sidebar-foreground: oklch(0.95 0.005 260);
   --sidebar-primary: oklch(0.7 0.15 260);
@@ -101,13 +136,13 @@
 
 @layer base {
   h1 {
-    @apply text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl;
+    @apply text-3xl font-bold sm:text-4xl lg:text-5xl;
   }
   h2 {
-    @apply text-2xl font-semibold tracking-tight sm:text-3xl;
+    @apply text-2xl font-semibold sm:text-3xl;
   }
   h3 {
-    @apply text-xl font-semibold tracking-tight sm:text-2xl;
+    @apply text-xl font-semibold sm:text-2xl;
   }
   h4 {
     @apply text-lg font-medium;
