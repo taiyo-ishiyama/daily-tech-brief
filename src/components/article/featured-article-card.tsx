@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Article } from "@/types";
 import { cn } from "@/lib/utils";
@@ -21,11 +22,13 @@ export function FeaturedArticleCard({ article, className }: FeaturedArticleCardP
     >
       {/* Thumbnail */}
       {article.thumbnail?.mode === "source" && article.thumbnail.url ? (
-        <div className="aspect-video overflow-hidden bg-secondary md:aspect-auto md:min-h-80">
-          <img
+        <div className="relative aspect-video overflow-hidden bg-secondary md:aspect-auto md:min-h-80">
+          <Image
             src={article.thumbnail.url}
             alt={article.thumbnail.alt ?? article.title}
-            className="size-full object-cover"
+            fill
+            unoptimized
+            className="object-cover"
           />
         </div>
       ) : (

@@ -1,26 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "./button";
 
+function subscribe(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+function getSnapshot(): boolean {
+  const stored = localStorage.getItem("theme");
+  return stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
+}
+
+function getServerSnapshot(): boolean {
+  return true; // default to dark on server
+}
+
 export function ThemeToggle() {
-  const [dark, setDark] = useState(true);
+  const dark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    const prefersDark =
-      stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    setDark(prefersDark);
-    document.documentElement.classList.toggle("dark", prefersDark);
-  }, []);
-
-  function toggle() {
+  const toggle = useCallback(() => {
     const next = !dark;
-    setDark(next);
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("theme", next ? "dark" : "light");
-  }
+    window.dispatchEvent(new StorageEvent("storage"));
+  }, [dark]);
 
   return (
     <Button variant="ghost" size="icon-sm" onClick={toggle} aria-label="Toggle theme">

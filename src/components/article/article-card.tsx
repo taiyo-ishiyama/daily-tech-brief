@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Article } from "@/types";
 import { cn } from "@/lib/utils";
@@ -21,11 +22,13 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
     >
       <Link href={`/articles/${article.slug}`} className="block">
         {article.thumbnail?.mode === "source" && article.thumbnail.url ? (
-          <div className="aspect-video overflow-hidden bg-secondary">
-            <img
+          <div className="relative aspect-video overflow-hidden bg-secondary">
+            <Image
               src={article.thumbnail.url}
               alt={article.thumbnail.alt ?? article.title}
-              className="size-full object-cover"
+              fill
+              unoptimized
+              className="object-cover"
             />
           </div>
         ) : (
