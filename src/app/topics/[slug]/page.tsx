@@ -7,9 +7,12 @@ import { SectionHeader } from "@/components/layout/section-header";
 import { ArticleCard } from "@/components/article/article-card";
 import { FeaturedArticleCard } from "@/components/article/featured-article-card";
 import { TopicChip } from "@/components/ui/topic-chip";
-import { Button } from "@/components/ui/button";
 import { PageTitle, BodyLarge, MutedSmall } from "@/components/ui/typography";
-import { getTopicBySlug, getArticlesByTopic, MOCK_TOPICS } from "@/lib/mock-data";
+import {
+  fetchTopicBySlug,
+  fetchArticlesByTopic,
+  fetchAllTopics,
+} from "@/lib/sanity/fetchers";
 
 interface TopicPageProps {
   params: Promise<{ slug: string }>;
@@ -17,21 +20,26 @@ interface TopicPageProps {
 
 export async function generateMetadata({ params }: TopicPageProps) {
   const { slug } = await params;
-  const topic = getTopicBySlug(slug);
+  const topic = await fetchTopicBySlug(slug);
   return {
     title: topic?.name ?? "Topic",
   };
 }
 
+export const revalidate = 60;
+
 export default async function TopicPage({ params }: TopicPageProps) {
   const { slug } = await params;
-  const topic = getTopicBySlug(slug);
+  const [topic, articles, allTopics] = await Promise.all([
+    fetchTopicBySlug(slug),
+    fetchArticlesByTopic(slug),
+    fetchAllTopics(),
+  ]);
 
   if (!topic) {
     notFound();
   }
 
-  const articles = getArticlesByTopic(slug);
   const leadArticle = articles[0];
   const archiveArticles = articles.slice(1);
 
@@ -49,8 +57,8 @@ export default async function TopicPage({ params }: TopicPageProps) {
 
         {/* Topic header */}
         <div className="mb-10 space-y-3">
-          <PageTitle className="italic">{topic.name}</PageTitle>
-          <BodyLarge className="max-w-2xl text-muted-foreground">
+          <PageTitle className="text-balance italic">{topic.name}</PageTitle>
+          <BodyLarge className="max-w-2xl text-pretty text-muted-foreground">
             {topic.description}
           </BodyLarge>
           <MutedSmall>
@@ -58,10 +66,10 @@ export default async function TopicPage({ params }: TopicPageProps) {
           </MutedSmall>
         </div>
 
-        {/* Filter tabs (static) */}
+        {/* Topic tabs */}
         <div className="mb-8 flex flex-wrap items-center gap-2">
           <span className="mr-2 text-sm font-medium text-muted-foreground">Topics:</span>
-          {MOCK_TOPICS.map((t) => (
+          {allTopics.map((t) => (
             <TopicChip
               key={t.slug}
               name={t.name}
@@ -80,20 +88,13 @@ export default async function TopicPage({ params }: TopicPageProps) {
 
         {/* Archive grid */}
         {archiveArticles.length > 0 && (
-          <div className="mb-10">
+          <div>
             <SectionHeader title="Archive" className="mb-6" />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {archiveArticles.map((article) => (
                 <ArticleCard key={article._id} article={article} />
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Load more (static) */}
-        {archiveArticles.length >= 3 && (
-          <div className="text-center">
-            <Button variant="outline">Load more articles</Button>
           </div>
         )}
       </Container>
