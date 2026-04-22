@@ -1,14 +1,13 @@
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import { Share2, Download, Newspaper, Tag, Clock } from "lucide-react";
+import { Newspaper, Tag, Clock } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { SectionHeader } from "@/components/layout/section-header";
 import { ArticleCard } from "@/components/article/article-card";
 import { FeaturedArticleCard } from "@/components/article/featured-article-card";
-import { Button } from "@/components/ui/button";
 import { PageTitle, BodyLarge } from "@/components/ui/typography";
-import { getDigestByDate, MOCK_TOPICS } from "@/lib/mock-data";
+import { fetchDigestByDate } from "@/lib/sanity/fetchers";
 
 interface DigestDetailPageProps {
   params: Promise<{ date: string }>;
@@ -21,9 +20,11 @@ export async function generateMetadata({ params }: DigestDetailPageProps) {
   };
 }
 
+export const revalidate = 60;
+
 export default async function DigestDetailPage({ params }: DigestDetailPageProps) {
   const { date } = await params;
-  const digest = getDigestByDate(date);
+  const digest = await fetchDigestByDate(date);
 
   if (!digest) {
     notFound();
@@ -45,42 +46,32 @@ export default async function DigestDetailPage({ params }: DigestDetailPageProps
       <Container>
         {/* Header */}
         <div className="mb-10 space-y-4">
-          <PageTitle>{digest.title}</PageTitle>
+          <PageTitle className="text-balance">{digest.title}</PageTitle>
           <p className="text-sm font-medium text-primary">
             {format(new Date(digest.date), "EEEE, d MMMM yyyy")}
           </p>
-          <BodyLarge className="max-w-2xl text-muted-foreground">
+          <BodyLarge className="max-w-2xl text-pretty text-muted-foreground">
             {digest.intro}
           </BodyLarge>
-          <div className="flex flex-wrap gap-3 pt-2">
-            <Button variant="outline" size="sm">
-              <Share2 className="size-3.5" />
-              Share
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="size-3.5" />
-              Save PDF
-            </Button>
-          </div>
         </div>
 
         {/* Stats row */}
         <div className="mb-12 grid gap-4 sm:grid-cols-3">
           <div className="rounded-lg border border-border bg-card p-5 text-center">
             <Newspaper className="mx-auto mb-2 size-5 text-primary" />
-            <p className="text-2xl font-bold">{digest.articles.length}</p>
+            <p className="text-2xl font-bold tabular-nums">{digest.articles.length}</p>
             <p className="text-xs text-muted-foreground">articles curated</p>
           </div>
           <div className="rounded-lg border border-border bg-card p-5 text-center">
             <Tag className="mx-auto mb-2 size-5 text-primary" />
-            <p className="text-2xl font-bold">
+            <p className="text-2xl font-bold tabular-nums">
               {Object.keys(digest.topicStats ?? {}).length}
             </p>
             <p className="text-xs text-muted-foreground">topics covered</p>
           </div>
           <div className="rounded-lg border border-border bg-card p-5 text-center">
             <Clock className="mx-auto mb-2 size-5 text-primary" />
-            <p className="text-2xl font-bold">{totalReadingTime}</p>
+            <p className="text-2xl font-bold tabular-nums">{totalReadingTime}</p>
             <p className="text-xs text-muted-foreground">min total reading</p>
           </div>
         </div>
@@ -94,8 +85,7 @@ export default async function DigestDetailPage({ params }: DigestDetailPageProps
 
         {/* Topic-grouped sections */}
         {Array.from(articlesByTopic.entries()).map(([topicName, articles]) => {
-          const topicSlug =
-            MOCK_TOPICS.find((t) => t.name === topicName)?.slug ?? topicName.toLowerCase();
+          const topicSlug = articles[0]?.topic.slug ?? topicName.toLowerCase();
           return (
             <div key={topicName} className="mb-12 last:mb-0">
               <SectionHeader
