@@ -2,11 +2,11 @@
  * Seed Sanity with test data based on mock-data.ts.
  * Run: node scripts/seed-sanity.mjs
  *
- * Requires NEXT_PUBLIC_SANITY_PROJECT_ID and SANITY_API_TOKEN in .env.local
+ * Requires NEXT_PUBLIC_SANITY_PROJECT_ID and SANITY_API_EDITOR_TOKEN in .env.local
  */
 
 import { createClient } from "@sanity/client";
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -14,7 +14,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Load .env.local
 const envPath = resolve(__dirname, "../.env.local");
-const envContent = readFileSync(envPath, "utf-8");
+const envContent = existsSync(envPath) ? readFileSync(envPath, "utf-8") : "";
 const env = {};
 for (const line of envContent.split("\n")) {
   const match = line.match(/^([^#=]+)=(.*)$/);
