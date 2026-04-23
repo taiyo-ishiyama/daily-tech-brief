@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { fetchAllTopics } from "@/lib/sanity/fetchers";
 import SearchPageClient from "./search-client";
 
@@ -12,5 +13,9 @@ export const revalidate = 60;
 export default async function SearchPage() {
   const topics = await fetchAllTopics();
 
-  return <SearchPageClient topics={topics} />;
+  return (
+    <Suspense>
+      <SearchPageClient topics={topics} />
+    </Suspense>
+  );
 }
