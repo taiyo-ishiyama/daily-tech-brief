@@ -18,7 +18,7 @@ export function DigestCard({ title, date, slug, intro, articleCount, className }
     <Link
       href={`/digest/${slug}`}
       className={cn(
-        "group flex flex-col gap-3 rounded-lg border border-border bg-card p-6 transition-colors hover:border-primary/30",
+        "group flex flex-col gap-3 rounded-lg border border-border bg-card p-6 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md",
         className
       )}
     >

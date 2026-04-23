@@ -16,7 +16,7 @@ export function FeaturedArticleCard({ article, className }: FeaturedArticleCardP
   return (
     <article
       className={cn(
-        "group grid gap-6 overflow-hidden rounded-lg border border-border bg-card md:grid-cols-2",
+        "group grid gap-6 overflow-hidden rounded-lg border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md md:grid-cols-2",
         className
       )}
     >
