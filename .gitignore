@@ -44,8 +44,10 @@ next-env.d.ts
 
 ideas
 
-# playwright mcp
+# playwright
 .playwright-mcp/
+playwright-report/
+test-results/
 
 # review screenshots
 review-*.png
