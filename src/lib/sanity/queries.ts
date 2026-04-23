@@ -111,3 +111,17 @@ export const TOPICS_WITH_COUNTS_QUERY = groq`
 export const TOPIC_BY_SLUG_QUERY = groq`
   *[_type == "topic" && slug.current == $slug][0]${topicProjection}
 `;
+
+// ── Sitemap queries (lightweight) ──
+
+export const SITEMAP_ARTICLES_QUERY = groq`
+  *[_type == "article"] | order(publishedAt desc) { "slug": slug.current, publishedAt, updatedAt }
+`;
+
+export const SITEMAP_DIGESTS_QUERY = groq`
+  *[_type == "digest"] | order(date desc) { date, updatedAt }
+`;
+
+export const SITEMAP_TOPICS_QUERY = groq`
+  *[_type == "topic"] | order(name asc) { "slug": slug.current }
+`;

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 
@@ -10,16 +11,44 @@ import {
   fetchArticleBySlug,
   fetchRelatedArticles,
 } from "@/lib/sanity/fetchers";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/seo/metadata";
+import { articleJsonLd, safeJsonLdSerialize } from "@/lib/seo/jsonld";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: ArticlePageProps) {
+export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
   const article = await fetchArticleBySlug(slug);
+  if (!article) return { title: "Article" };
+
+  const ogImage =
+    article.thumbnail?.mode === "source" && article.thumbnail.url
+      ? article.thumbnail.url
+      : DEFAULT_OG_IMAGE;
+
   return {
-    title: article?.title ?? "Article",
+    title: article.title,
+    description: article.summaryShort,
+    alternates: { canonical: absoluteUrl(`/articles/${slug}`) },
+    openGraph: {
+      title: article.title,
+      description: article.summaryShort,
+      url: absoluteUrl(`/articles/${slug}`),
+      type: "article",
+      publishedTime: article.publishedAt,
+      modifiedTime: article.updatedAt ?? article.publishedAt,
+      section: article.topic.name,
+      tags: article.tags,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: article.summaryShort,
+      images: [ogImage],
+    },
   };
 }
 
@@ -32,9 +61,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const related = await fetchRelatedArticles(article.topic.slug, slug, 2);
+  const jsonLd = articleJsonLd(article);
 
   return (
     <article className="py-12 lg:py-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLdSerialize(jsonLd) }}
+      />
       <Container className="max-w-2xl">
 
         {/* ── Header ── */}

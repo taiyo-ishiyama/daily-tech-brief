@@ -6,6 +6,7 @@ import SearchPageClient from "./search-client";
 export const metadata: Metadata = {
   title: "Search",
   description: "Search the article archive.",
+  robots: { index: false, follow: true },
 };
 
 export const revalidate = 60;
