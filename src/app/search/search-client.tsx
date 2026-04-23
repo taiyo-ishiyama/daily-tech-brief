@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useCallback } from "react";
+import { useState, useTransition, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Search } from "lucide-react";
@@ -15,73 +15,59 @@ import type { Article, Topic } from "@/types";
 
 interface SearchPageClientProps {
   topics: Topic[];
+  initialResults: Article[];
+  initialQuery: string;
+  initialTopic: string;
 }
 
-export default function SearchPageClient({ topics }: SearchPageClientProps) {
+export default function SearchPageClient({
+  topics,
+  initialResults,
+  initialQuery,
+  initialTopic,
+}: SearchPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get("q") ?? "";
-  const initialTopic = searchParams.get("topic") ?? "";
+  const urlQuery = searchParams.get("q") ?? "";
+  const urlTopic = searchParams.get("topic") ?? "";
 
-  const [query, setQuery] = useState(initialQuery);
-  const [activeTopic, setActiveTopic] = useState(initialTopic);
-  const [submittedQuery, setSubmittedQuery] = useState("");
-  const [results, setResults] = useState<Article[]>([]);
-  const [searched, setSearched] = useState(false);
+  const [query, setQuery] = useState(urlQuery || initialQuery);
+  const [activeTopic, setActiveTopic] = useState(urlTopic || initialTopic);
+  const [submittedQuery, setSubmittedQuery] = useState(initialQuery);
+  const [results, setResults] = useState<Article[]>(initialResults);
+  const [searched, setSearched] = useState(initialResults.length > 0 || !!initialQuery);
   const [isPending, startTransition] = useTransition();
+  const latestSearchId = useRef(0);
 
-  const updateUrl = useCallback(
-    (q: string, topic: string) => {
-      const params = new URLSearchParams();
-      if (q) params.set("q", q);
-      if (topic) params.set("topic", topic);
-      const qs = params.toString();
-      router.push(qs ? `/search?${qs}` : "/search");
-    },
-    [router]
-  );
-
-  const executeSearch = useCallback(
-    (term: string, topicSlug: string) => {
-      if (!term) {
-        setResults([]);
-        setSubmittedQuery("");
-        setSearched(false);
-        return;
-      }
-
-      setSearched(false);
-      startTransition(async () => {
-        const articles = await searchArticlesAction(term, topicSlug || undefined);
-        setResults(articles);
-        setSubmittedQuery(term);
-        setSearched(true);
-      });
-    },
-    [startTransition]
-  );
-
-  // Run search on mount if ?q= is present
-  useEffect(() => {
-    if (initialQuery) {
-      executeSearch(initialQuery, initialTopic);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = query.trim();
-
-    if (!trimmed) {
-      updateUrl("", activeTopic);
+  function executeSearch(term: string, topicSlug: string) {
+    if (!term) {
+      latestSearchId.current += 1;
       setResults([]);
       setSubmittedQuery("");
       setSearched(false);
       return;
     }
 
-    updateUrl(trimmed, activeTopic);
+    const searchId = latestSearchId.current + 1;
+    latestSearchId.current = searchId;
+    setSearched(false);
+    startTransition(async () => {
+      const articles = await searchArticlesAction(term, topicSlug || undefined);
+      if (searchId !== latestSearchId.current) return;
+      setResults(articles);
+      setSubmittedQuery(term);
+      setSearched(true);
+    });
+  }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = query.trim();
+    const params = new URLSearchParams();
+    if (trimmed) params.set("q", trimmed);
+    if (activeTopic) params.set("topic", activeTopic);
+    const qs = params.toString();
+    router.push(qs ? `/search?${qs}` : "/search");
     executeSearch(trimmed, activeTopic);
   }
 
@@ -90,11 +76,14 @@ export default function SearchPageClient({ topics }: SearchPageClientProps) {
     setActiveTopic(next);
 
     const trimmed = query.trim();
+    const params = new URLSearchParams();
+    if (trimmed) params.set("q", trimmed);
+    if (next) params.set("topic", next);
+    const qs = params.toString();
+    router.push(qs ? `/search?${qs}` : "/search");
+
     if (trimmed) {
-      updateUrl(trimmed, next);
       executeSearch(trimmed, next);
-    } else {
-      updateUrl("", next);
     }
   }
 
@@ -150,6 +139,7 @@ export default function SearchPageClient({ topics }: SearchPageClientProps) {
             <button
               key={topic.slug}
               type="button"
+              aria-pressed={activeTopic === topic.slug}
               onClick={() => handleTopicToggle(topic.slug)}
               className={cn(
                 "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors",

@@ -96,10 +96,12 @@ export async function fetchRelatedArticles(
 }
 
 export async function searchArticles(query: string, topicSlug?: string): Promise<Article[]> {
-  if (!query.trim()) return [];
-  const q = `${query.trim()}*`;
-  if (topicSlug) {
-    return safeFetch<Article[]>(SEARCH_ARTICLES_BY_TOPIC_QUERY, { q, topicSlug }, []);
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) return [];
+  const q = `${trimmedQuery}*`;
+  const trimmedTopic = topicSlug?.trim();
+  if (trimmedTopic) {
+    return safeFetch<Article[]>(SEARCH_ARTICLES_BY_TOPIC_QUERY, { q, topicSlug: trimmedTopic }, []);
   }
   return safeFetch<Article[]>(SEARCH_ARTICLES_QUERY, { q }, []);
 }
