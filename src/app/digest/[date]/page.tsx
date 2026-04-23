@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { Newspaper, Tag, Clock } from "lucide-react";
@@ -8,15 +9,27 @@ import { ArticleCard } from "@/components/article/article-card";
 import { FeaturedArticleCard } from "@/components/article/featured-article-card";
 import { PageTitle, BodyLarge } from "@/components/ui/typography";
 import { fetchDigestByDate } from "@/lib/sanity/fetchers";
+import { absoluteUrl } from "@/lib/seo/metadata";
+import { collectionPageJsonLd, safeJsonLdSerialize } from "@/lib/seo/jsonld";
 
 interface DigestDetailPageProps {
   params: Promise<{ date: string }>;
 }
 
-export async function generateMetadata({ params }: DigestDetailPageProps) {
+export async function generateMetadata({ params }: DigestDetailPageProps): Promise<Metadata> {
   const { date } = await params;
+  const digest = await fetchDigestByDate(date);
+  const description = digest?.intro ?? `Daily tech digest for ${date}`;
   return {
     title: `Daily Digest — ${date}`,
+    description,
+    alternates: { canonical: absoluteUrl(`/digest/${date}`) },
+    openGraph: {
+      title: `Daily Digest — ${date}`,
+      description,
+      url: absoluteUrl(`/digest/${date}`),
+      type: "website",
+    },
   };
 }
 
@@ -41,8 +54,19 @@ export default async function DigestDetailPage({ params }: DigestDetailPageProps
     articlesByTopic.set(topicName, group);
   }
 
+  const jsonLd = collectionPageJsonLd(
+    `Daily Digest — ${date}`,
+    digest.intro,
+    `/digest/${date}`,
+    digest.articles.map((a) => ({ url: absoluteUrl(`/articles/${a.slug}`), name: a.title }))
+  );
+
   return (
     <section className="py-12 lg:py-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLdSerialize(jsonLd) }}
+      />
       <Container>
         {/* Header */}
         <div className="mb-10 space-y-4">

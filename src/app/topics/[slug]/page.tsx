@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -13,16 +14,26 @@ import {
   fetchArticlesByTopic,
   fetchAllTopics,
 } from "@/lib/sanity/fetchers";
+import { absoluteUrl } from "@/lib/seo/metadata";
 
 interface TopicPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: TopicPageProps) {
+export async function generateMetadata({ params }: TopicPageProps): Promise<Metadata> {
   const { slug } = await params;
   const topic = await fetchTopicBySlug(slug);
+  if (!topic) return { title: "Topic" };
   return {
-    title: topic?.name ?? "Topic",
+    title: topic.name,
+    description: topic.description,
+    alternates: { canonical: absoluteUrl(`/topics/${slug}`) },
+    openGraph: {
+      title: topic.name,
+      description: topic.description,
+      url: absoluteUrl(`/topics/${slug}`),
+      type: "website",
+    },
   };
 }
 

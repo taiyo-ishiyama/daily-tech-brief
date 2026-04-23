@@ -6,7 +6,8 @@ import { fetchAllDigests } from "@/lib/sanity/fetchers";
 
 export const metadata: Metadata = {
   title: "Digests",
-  description: "Browse the archive of daily tech digests.",
+  description: "Browse the archive of daily tech digests. Each edition curates the most important stories, summarised with AI and reviewed for accuracy.",
+  alternates: { canonical: "/digest" },
 };
 
 export const revalidate = 60;

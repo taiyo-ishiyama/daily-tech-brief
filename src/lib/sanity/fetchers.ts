@@ -14,6 +14,9 @@ import {
   ALL_TOPICS_QUERY,
   TOPICS_WITH_COUNTS_QUERY,
   TOPIC_BY_SLUG_QUERY,
+  SITEMAP_ARTICLES_QUERY,
+  SITEMAP_DIGESTS_QUERY,
+  SITEMAP_TOPICS_QUERY,
 } from "./queries";
 import type { Article, Digest, Topic } from "@/types";
 
@@ -148,3 +151,21 @@ export const fetchTopicBySlug = cache(
     return safeFetch<Topic | null>(TOPIC_BY_SLUG_QUERY, { slug }, null);
   }
 );
+
+// ── Sitemap fetchers ──
+
+interface SitemapArticle { slug: string; publishedAt: string; updatedAt?: string }
+interface SitemapDigest { slug: string; date: string; updatedAt?: string }
+interface SitemapTopic { slug: string }
+
+export async function fetchArticlesForSitemap(): Promise<SitemapArticle[]> {
+  return safeFetch<SitemapArticle[]>(SITEMAP_ARTICLES_QUERY, undefined, []);
+}
+
+export async function fetchDigestsForSitemap(): Promise<SitemapDigest[]> {
+  return safeFetch<SitemapDigest[]>(SITEMAP_DIGESTS_QUERY, undefined, []);
+}
+
+export async function fetchTopicsForSitemap(): Promise<SitemapTopic[]> {
+  return safeFetch<SitemapTopic[]>(SITEMAP_TOPICS_QUERY, undefined, []);
+}

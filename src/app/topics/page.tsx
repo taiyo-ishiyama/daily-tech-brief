@@ -8,7 +8,8 @@ import { fetchTopicsWithCounts } from "@/lib/sanity/fetchers";
 
 export const metadata: Metadata = {
   title: "Topics",
-  description: "Browse articles by topic.",
+  description: "Browse our coverage by topic. Each category is curated to surface the most impactful developments in its domain.",
+  alternates: { canonical: "/topics" },
 };
 
 export const revalidate = 60;
