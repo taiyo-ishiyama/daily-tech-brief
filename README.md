@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Daily Tech Brief
+
+A curated daily tech news digest with AI-generated summaries, built with Next.js and Sanity CMS.
+
+## Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS 4 |
+| UI Components | shadcn/ui, Base UI |
+| CMS | Sanity |
+| Fonts | Inter + JetBrains Mono |
+| Hosting | Vercel |
+| Testing | Vitest (Unit) |
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Install dependencies
+pnpm install
+
+# Start development server
 pnpm dev
-# or
-bun dev
+
+# Run linter
+pnpm lint
+
+# Run type checker
+pnpm typecheck
+
+# Run tests
+pnpm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+daily-tech-brief/
+├── src/
+│   ├── app/                 # Next.js App Router
+│   │   ├── page.tsx         # Homepage
+│   │   ├── articles/        # Article detail pages
+│   │   ├── digest/          # Digest index & detail pages
+│   │   ├── topics/          # Topics index & detail pages
+│   │   ├── search/          # Search page
+│   │   ├── sitemap.ts       # Dynamic sitemap
+│   │   ├── robots.ts        # Robots.txt
+│   │   └── opengraph-image.tsx  # Default OG image
+│   ├── components/          # React components
+│   │   ├── layout/          # Header, Footer, Container
+│   │   ├── article/         # Article cards & placeholders
+│   │   ├── digest/          # Digest cards
+│   │   └── ui/              # UI primitives
+│   ├── lib/                 # Utilities and config
+│   │   ├── sanity/          # Sanity client, queries, fetchers
+│   │   ├── seo/             # SEO metadata & JSON-LD
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── constants/       # Site config
+│   │   └── utils/           # Helper functions
+│   └── types/               # TypeScript type definitions
+├── sanity/                  # Sanity Studio
+│   └── schemaTypes/         # Content schemas
+├── scripts/                 # Utility scripts
+│   └── seed-sanity.mjs      # Seed test data
+├── docs/                    # Documentation
+│   ├── ARCHITECTURE.md      # Technical architecture
+│   ├── CONTENT_MODEL.md     # Sanity CMS schemas
+│   └── PLANNING.md          # Product planning
+└── public/                  # Static assets
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables
 
-## Learn More
+Create a `.env.local` file:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id
+NEXT_PUBLIC_SANITY_DATASET=production
+NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+SANITY_API_EDITOR_TOKEN=your_editor_token
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Editorial Workflow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Content is published through a human-in-the-loop workflow using Claude Code skills:
 
-## Deploy on Vercel
+1. **Collect** — Gather trending articles from Hacker News, Hatena Bookmark, and Reddit
+2. **Review** — Browse the daily digest and select articles
+3. **Publish** — Select URLs to generate summaries and upload to Sanity
+4. **Browse** — The website reads published content from Sanity and presents it in an editorial interface
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Architecture](./docs/ARCHITECTURE.md) — Technical architecture and data flow
+- [Content Model](./docs/CONTENT_MODEL.md) — Sanity CMS schema details
+- [Planning](./docs/PLANNING.md) — Product planning and design direction
