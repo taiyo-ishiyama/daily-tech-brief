@@ -8,9 +8,9 @@ import {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [articles, digests, topics] = await Promise.all([
-    fetchArticlesForSitemap(),
-    fetchDigestsForSitemap(),
-    fetchTopicsForSitemap(),
+    fetchArticlesForSitemap().catch(() => []),
+    fetchDigestsForSitemap().catch(() => []),
+    fetchTopicsForSitemap().catch(() => []),
   ]);
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -39,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const digestPages: MetadataRoute.Sitemap = digests.map((d) => ({
-    url: `${SITE_URL}/digest/${d.slug}`,
+    url: `${SITE_URL}/digest/${d.date}`,
     lastModified: d.updatedAt ?? d.date,
     changeFrequency: "monthly",
     priority: 0.7,

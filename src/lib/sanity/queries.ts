@@ -119,7 +119,7 @@ export const SITEMAP_ARTICLES_QUERY = groq`
 `;
 
 export const SITEMAP_DIGESTS_QUERY = groq`
-  *[_type == "digest"] | order(date desc) { "slug": slug.current, date, updatedAt }
+  *[_type == "digest"] | order(date desc) { date, updatedAt }
 `;
 
 export const SITEMAP_TOPICS_QUERY = groq`

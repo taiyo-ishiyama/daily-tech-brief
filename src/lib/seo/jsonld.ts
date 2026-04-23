@@ -1,6 +1,6 @@
 import { SITE_NAME, SITE_URL } from "@/lib/constants";
 import type { Article } from "@/types";
-import { absoluteUrl } from "./metadata";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "./metadata";
 
 const publisher = {
   "@type": "Organization" as const,
@@ -10,9 +10,7 @@ const publisher = {
 
 export function articleJsonLd(article: Article) {
   const url = absoluteUrl(`/articles/${article.slug}`);
-  const image = article.thumbnail?.mode === "source" && article.thumbnail.url
-    ? article.thumbnail.url
-    : undefined;
+  const image = article.thumbnail?.url || DEFAULT_OG_IMAGE;
 
   return {
     "@context": "https://schema.org",
@@ -23,11 +21,11 @@ export function articleJsonLd(article: Article) {
     mainEntityOfPage: url,
     datePublished: article.publishedAt,
     dateModified: article.updatedAt ?? article.publishedAt,
-    ...(image ? { image: [image] } : {}),
+    image: [image],
     articleSection: article.topic.name,
     keywords: article.tags.join(", "),
     publisher,
-    isBasedOn: article.sourceUrl,
+    ...(article.sourceUrl ? { isBasedOn: article.sourceUrl } : {}),
   };
 }
 

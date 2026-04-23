@@ -155,7 +155,7 @@ export const fetchTopicBySlug = cache(
 // ── Sitemap fetchers ──
 
 interface SitemapArticle { slug: string; publishedAt: string; updatedAt?: string }
-interface SitemapDigest { slug: string; date: string; updatedAt?: string }
+interface SitemapDigest { date: string; updatedAt?: string }
 interface SitemapTopic { slug: string }
 
 export async function fetchArticlesForSitemap(): Promise<SitemapArticle[]> {
