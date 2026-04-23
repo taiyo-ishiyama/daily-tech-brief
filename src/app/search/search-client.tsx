@@ -1,46 +1,90 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { format } from "date-fns";
 
 import { Container } from "@/components/layout/container";
-import { TopicChip } from "@/components/ui/topic-chip";
 import { Button } from "@/components/ui/button";
 import { PageTitle, BodyLarge, CardTitle } from "@/components/ui/typography";
 import { searchArticlesAction } from "@/lib/sanity/actions";
+import { cn } from "@/lib/utils";
 import type { Article, Topic } from "@/types";
 
 interface SearchPageClientProps {
   topics: Topic[];
+  initialResults: Article[];
+  initialQuery: string;
+  initialTopic: string;
 }
 
-export default function SearchPageClient({ topics }: SearchPageClientProps) {
-  const [query, setQuery] = useState("");
-  const [submittedQuery, setSubmittedQuery] = useState("");
-  const [results, setResults] = useState<Article[]>([]);
-  const [searched, setSearched] = useState(false);
+export default function SearchPageClient({
+  topics,
+  initialResults,
+  initialQuery,
+  initialTopic,
+}: SearchPageClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlQuery = searchParams.get("q") ?? "";
+  const urlTopic = searchParams.get("topic") ?? "";
+
+  const [query, setQuery] = useState(urlQuery || initialQuery);
+  const [activeTopic, setActiveTopic] = useState(urlTopic || initialTopic);
+  const [submittedQuery, setSubmittedQuery] = useState(initialQuery);
+  const [results, setResults] = useState<Article[]>(initialResults);
+  const [searched, setSearched] = useState(initialResults.length > 0 || !!initialQuery);
   const [isPending, startTransition] = useTransition();
+  const latestSearchId = useRef(0);
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = query.trim();
-
-    if (!trimmed) {
+  function executeSearch(term: string, topicSlug: string) {
+    if (!term) {
+      latestSearchId.current += 1;
       setResults([]);
       setSubmittedQuery("");
       setSearched(false);
       return;
     }
 
+    const searchId = latestSearchId.current + 1;
+    latestSearchId.current = searchId;
     setSearched(false);
     startTransition(async () => {
-      const articles = await searchArticlesAction(trimmed);
+      const articles = await searchArticlesAction(term, topicSlug || undefined);
+      if (searchId !== latestSearchId.current) return;
       setResults(articles);
-      setSubmittedQuery(trimmed);
+      setSubmittedQuery(term);
       setSearched(true);
     });
+  }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = query.trim();
+    const params = new URLSearchParams();
+    if (trimmed) params.set("q", trimmed);
+    if (activeTopic) params.set("topic", activeTopic);
+    const qs = params.toString();
+    router.push(qs ? `/search?${qs}` : "/search");
+    executeSearch(trimmed, activeTopic);
+  }
+
+  function handleTopicToggle(topicSlug: string) {
+    const next = activeTopic === topicSlug ? "" : topicSlug;
+    setActiveTopic(next);
+
+    const trimmed = query.trim();
+    const params = new URLSearchParams();
+    if (trimmed) params.set("q", trimmed);
+    if (next) params.set("topic", next);
+    const qs = params.toString();
+    router.push(qs ? `/search?${qs}` : "/search");
+
+    if (trimmed) {
+      executeSearch(trimmed, next);
+    }
   }
 
   function highlightQuery(text: string) {
@@ -89,10 +133,23 @@ export default function SearchPageClient({ topics }: SearchPageClientProps) {
           </Button>
         </form>
 
-        {/* Filter pills */}
+        {/* Topic filter chips */}
         <div className="mb-8 flex flex-wrap items-center gap-2">
           {topics.map((topic) => (
-            <TopicChip key={topic.slug} name={topic.name} slug={topic.slug} />
+            <button
+              key={topic.slug}
+              type="button"
+              aria-pressed={activeTopic === topic.slug}
+              onClick={() => handleTopicToggle(topic.slug)}
+              className={cn(
+                "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                activeTopic === topic.slug
+                  ? "border-primary bg-primary/20 text-primary"
+                  : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+              )}
+            >
+              {topic.name}
+            </button>
           ))}
         </div>
 
@@ -104,11 +161,19 @@ export default function SearchPageClient({ topics }: SearchPageClientProps) {
               <span className="font-medium text-foreground">{results.length}</span>{" "}
               result{results.length !== 1 ? "s" : ""} for{" "}
               <span className="font-medium text-primary">&ldquo;{submittedQuery}&rdquo;</span>
+              {activeTopic && (
+                <>
+                  {" "}in{" "}
+                  <span className="font-medium text-primary">
+                    {topics.find((t) => t.slug === activeTopic)?.name ?? activeTopic}
+                  </span>
+                </>
+              )}
             </p>
 
             {results.length === 0 ? (
               <p className="py-12 text-center text-muted-foreground">
-                No articles found. Try a different search term.
+                No articles found. Try a different search term or topic.
               </p>
             ) : (
               <div className="space-y-4">

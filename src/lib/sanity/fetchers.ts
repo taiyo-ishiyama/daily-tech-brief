@@ -7,6 +7,7 @@ import {
   ARTICLES_BY_TOPIC_QUERY,
   RELATED_ARTICLES_QUERY,
   SEARCH_ARTICLES_QUERY,
+  SEARCH_ARTICLES_BY_TOPIC_QUERY,
   ALL_DIGESTS_QUERY,
   DIGEST_BY_DATE_QUERY,
   LATEST_DIGEST_QUERY,
@@ -94,9 +95,14 @@ export async function fetchRelatedArticles(
   }, []);
 }
 
-export async function searchArticles(query: string): Promise<Article[]> {
-  if (!query.trim()) return [];
-  const q = `${query.trim()}*`;
+export async function searchArticles(query: string, topicSlug?: string): Promise<Article[]> {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) return [];
+  const q = `${trimmedQuery}*`;
+  const trimmedTopic = topicSlug?.trim();
+  if (trimmedTopic) {
+    return safeFetch<Article[]>(SEARCH_ARTICLES_BY_TOPIC_QUERY, { q, topicSlug: trimmedTopic }, []);
+  }
   return safeFetch<Article[]>(SEARCH_ARTICLES_QUERY, { q }, []);
 }
 

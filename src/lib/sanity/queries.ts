@@ -58,6 +58,15 @@ export const SEARCH_ARTICLES_QUERY = groq`
   )] | order(publishedAt desc)[0...20]${articleProjection}
 `;
 
+export const SEARCH_ARTICLES_BY_TOPIC_QUERY = groq`
+  *[_type == "article" && topic->slug.current == $topicSlug && (
+    title match $q ||
+    summaryShort match $q ||
+    summaryLong match $q ||
+    sourceName match $q
+  )] | order(publishedAt desc)[0...20]${articleProjection}
+`;
+
 // ── Digest queries ──
 
 const digestProjection = groq`{
