@@ -13,6 +13,7 @@ import {
 } from "@/lib/sanity/fetchers";
 import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/seo/metadata";
 import { articleJsonLd, safeJsonLdSerialize } from "@/lib/seo/jsonld";
+import { Reveal } from "@/components/ui/reveal";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -72,37 +73,41 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <Container className="max-w-2xl">
 
         {/* ── Header ── */}
-        <header className="mb-12">
-          <div className="mb-5 flex flex-wrap items-center gap-2">
-            <TopicChip name={article.topic.name} slug={article.topic.slug} active />
-            {article.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
+        <Reveal>
+          <header className="mb-12">
+            <div className="mb-5 flex flex-wrap items-center gap-2">
+              <TopicChip name={article.topic.name} slug={article.topic.slug} active />
+              {article.tags.slice(0, 3).map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
 
-          <h1 className="text-balance text-3xl font-bold leading-tight sm:text-4xl">
-            {article.title}
-          </h1>
+            <h1 className="text-balance text-3xl font-bold leading-tight sm:text-4xl">
+              {article.title}
+            </h1>
 
-          <MetadataRow
-            source={article.sourceName}
-            readingTime={article.readingTime}
-            date={article.publishedAt}
-            className="mt-5"
-          />
-        </header>
+            <MetadataRow
+              source={article.sourceName}
+              readingTime={article.readingTime}
+              date={article.publishedAt}
+              className="mt-5"
+            />
+          </header>
+        </Reveal>
 
         {/* ── TL;DR ── */}
-        <section className="mb-12 border-l-2 border-primary py-1 pl-5">
-          <p className="text-pretty text-lg leading-relaxed text-foreground/80">
-            {article.summaryShort}
-          </p>
-        </section>
+        <Reveal delay={80}>
+          <section className="mb-12 border-l-2 border-primary py-1 pl-5">
+            <p className="text-pretty text-lg leading-relaxed text-foreground/80">
+              {article.summaryShort}
+            </p>
+          </section>
+        </Reveal>
 
         {/* ── Full Summary ── */}
         <section className="mb-12">
@@ -120,6 +125,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {/* ── Key Takeaways ── */}
         {article.keyTakeaways.length > 0 && (
+          <Reveal>
           <section className="mb-12 rounded-lg border border-border bg-card/50 p-6 sm:p-8">
             <h2 className="mb-5 text-sm font-semibold uppercase text-foreground">
               Key Takeaways
@@ -135,6 +141,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               ))}
             </ul>
           </section>
+          </Reveal>
         )}
 
         {/* ── Why It Matters ── */}
